@@ -40,22 +40,14 @@ app.use(passport.session());
 
 mongoose.connect(process.env.MONGODB_URL);
 
-// const userSchema = new mongoose.Schema ({
-//     username: String,
-//     password: String,
-
-  
-//     googleId: String,
-//     email: String 
-//   });
 
 
   const userSchema = new mongoose.Schema({
     leader_name: String,
     leader_email: String,
     profile_photo_url: String,
-    team_member_name: String,
-    team_member_email: String,
+    member_name: String,
+    member_email: String,
     payment_amount: Number,
     googleId: String, // Keep the Google ID for OAuth
     email: String, // Keep the email for OAuth
@@ -84,108 +76,13 @@ mongoose.connect(process.env.MONGODB_URL);
     }
   });
   
-//   passport.use(new GoogleStrategy({
-//       clientID: process.env.CLIENT_ID,
-//       clientSecret: process.env.CLIENT_SECRET,
-//       callbackURL: "http://localhost:4000/auth/google/blockverse",
-//       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-//     },
-//     function(accessToken, refreshToken, profile, cb) {
-//       console.log(profile);
-//       const email = profile.emails[0].value;
-  
-//       User.findOrCreate({ googleId: profile.id, username: email, email: email }, function (err, user) {
-//         return cb(err, user);
-//       });
-//     }
-//   ));
-
-
-// passport.use(new GoogleStrategy({
-//     clientID: process.env.CLIENT_ID,
-//     clientSecret: process.env.CLIENT_SECRET,
-//     callbackURL: "http://localhost:4000/auth/google/blockverse",
-//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-//   },
-//   function (accessToken, refreshToken, profile, cb) {
-//     const email = profile.emails[0].value;
-  
-//     User.findOrCreate({ googleId: profile.id, email: email }, function (err, user) {
-//       if (err) {
-//         return cb(err);
-//       }
-  
-//       user.leader_name = profile.displayName;
-//       user.leader_email = email;
-//       user.profile_photo_url = profile.photos[0].value;
-  
-//       user.save(function (err) {
-//         return cb(err, user);
-//       });
-//     });
-//   }));
 
 
 
 
-// passport.use(new GoogleStrategy({
-//     clientID: process.env.CLIENT_ID,
-//     clientSecret: process.env.CLIENT_SECRET,
-//     callbackURL: "http://localhost:4000/auth/google/blockverse",
-//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-//   },
-//   async function (accessToken, refreshToken, profile, cb) {
-//     const email = profile.emails[0].value;
-  
-//     try {
-//       let user = await User.findOrCreate({ googleId: profile.id, email: email });
-  
-//       user.leader_name = profile.displayName;
-//       user.leader_email = email;
-//       user.profile_photo_url = profile.photos[0].value;
-  
-//       await user.save();
-  
-//       return cb(null, user);
-//     } catch (err) {
-//       return cb(err);
-//     }
-//   }));
 
 
 
-
-// passport.use(new GoogleStrategy({
-//     clientID: process.env.CLIENT_ID,
-//     clientSecret: process.env.CLIENT_SECRET,
-//     callbackURL: "http://localhost:4000/auth/google/blockverse",
-//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-//   },
-//   async function(accessToken, refreshToken, profile, cb) {
-//     const email = profile.emails[0].value;
-  
-//     try {
-//       const user = await User.findOne({ googleId: profile.id, email: email });
-  
-//       if (!user) {
-//         // User doesn't exist, create a new user with the desired structure
-//         const newUser = new User({
-//           googleId: profile.id,
-//           email: email,
-//           leader_name: profile.displayName,
-//           leader_email: email,
-//           profile_photo_url: profile.photos[0].value,
-//         });
-  
-//         await newUser.save();
-//         return cb(null, newUser);
-//       } else {
-//         return cb(null, user);
-//       }
-//     } catch (err) {
-//       return cb(err);
-//     }
-//   }));
 
 
 
@@ -232,41 +129,7 @@ passport.use(new GoogleStrategy({
   
 
 
-// passport.use(new GoogleStrategy({
-//     clientID: process.env.CLIENT_ID,
-//     clientSecret: process.env.CLIENT_SECRET,
-//     callbackURL: "http://localhost:4000/auth/google/blockverse",
-//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-//   }, async function (accessToken, refreshToken, profile, cb) {
-//     const email = profile.emails[0].value;
-  
-//     try {
-//       const user = await User.findOne({ googleId: profile.id, email: email });
-  
-//       if (!user) {
-//         // User doesn't exist, create a new user with the desired structure
-//         const newUser = new User({
-//           googleId: profile.id,
-//           email: email,
-//           username: profile.displayName, // Set the username as the leader name
-//           profile_photo_url: profile.photos[0].value,
-//         });
-  
-//         await newUser.save();
-//         return cb(null, newUser);
-//       } else {
-//         // Update additional fields for the existing user
-//         user.username = profile.displayName; // Update the username with leader name
-//         user.profile_photo_url = profile.photos[0].value;
-  
-//         await user.save();
-//         return cb(null, user);
-//       }
-//     } catch (err) {
-//       return cb(err);
-//     }
-//   }));
-  
+
 
   
   
@@ -297,38 +160,6 @@ app.get("/auth/google/blockverse",
 
 
 
-// app.get("/auth/google/blockverse",
-//   passport.authenticate('google', { failureRedirect: "/login" }),
-//   function(req, res) {
-//     // Successful authentication, redirect to secrets.
-
-//     // Extract user information from the profile object
-//     const profile = req.user._json; // Assuming you've stored the user's Google profile in req.user
-
-//     // Create a new user instance
-//     const newUser = new User({
-//       username: profile.email, // You can use the email as the username
-//       googleId: profile.sub, // The Google ID
-//       // Add other fields from the user's Google profile
-//       leader_name: profile.displayName,
-//       leader_email: profile.email,
-//       profile_photo_url: profile.picture,
-//       // Add other fields you want to save
-//       team_member_name: req.query.team_member_name, // Assuming you pass it as a query parameter
-//       team_member_email: req.query.team_member_email, // Assuming you pass it as a query parameter
-//       payment_amount: req.query.payment_amount, // Assuming you pass it as a query parameter
-//     });
-
-//     // Save the new user to the database
-//     newUser.save(function(err) {
-//       if (err) {
-//         console.error(err);
-//       }
-//     });
-
-//     res.redirect("/blockverse");
-//   }
-// );
 
 
 
@@ -354,10 +185,7 @@ app.get("/auth/google/blockverse",
     }
   });
 
-//   app.get("/logout", function(req, res){
-//     req.logout();
-//     res.redirect("/");
-//   });
+
 
   app.get("/logout", function(req, res){
     req.logout(function(err) {
@@ -370,21 +198,23 @@ app.get("/auth/google/blockverse",
   
 
 
-//   app.post("/register", function(req, res){
-//     User.register({username: req.body.username}, req.body.password, function(err, user){
-//       if (err) {
-//         console.log(err);
-//         res.redirect("/register");
-//       } else {
-//         passport.authenticate("local")(req, res, function(){
-//           res.redirect("/blockverse");
-//         });
-//       }
-//     });
-//   });
 
-  app.post("/register", function (req, res) {
-    User.register(new User({ username: req.body.username }), req.body.password, function (err, user) {
+
+
+app.post("/register", function (req, res) {
+    console.log(req.body);
+    const { username, leader_email, profile_photo_url, member_name, member_email, password } = req.body;
+  
+    const user = new User({
+        username,
+      leader_email,
+      profile_photo_url,
+      member_name,
+     member_email,
+      
+    });
+  
+    User.register(user, password, function (err, user) {
       if (err) {
         console.error(err);
         return res.status(500).json({ error: "Registration failed" });
@@ -394,6 +224,7 @@ app.get("/auth/google/blockverse",
       });
     });
   });
+  
   
 
 
