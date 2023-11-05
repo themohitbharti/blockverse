@@ -43,8 +43,10 @@ mongoose.connect(process.env.MONGODB_URL);
 const userSchema = new mongoose.Schema ({
     username: String,
     password: String,
+
   
     googleId: String,
+    email: String 
   });
 
   userSchema.plugin(passportLocalMongoose);
@@ -77,12 +79,39 @@ const userSchema = new mongoose.Schema ({
     },
     function(accessToken, refreshToken, profile, cb) {
       console.log(profile);
+      
   
       User.findOrCreate({ googleId: profile.id }, function (err, user) {
         return cb(err, user);
       });
     }
   ));
+
+
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.CLIENT_ID,
+//     clientSecret: process.env.CLIENT_SECRET,
+//     callbackURL: "http://localhost:4000/auth/google/blockverse",
+//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+//   },
+//   function(accessToken, refreshToken, profile, cb) {
+//     // Create a new user object and set the fields you want to save
+//     const newUser = new User({
+//       username: profile.emails[0].value, // Use the email as the username
+//       googleId: profile.id,
+//       email: profile.emails[0].value // Save the email
+//     });
+
+//     // Save the user to the database
+//     newUser.save(function(err) {
+//       return cb(err, newUser);
+//     });
+//   }
+// ));
+
+  
+  
+  
 
 
   app.get("/", function(req, res){
@@ -96,7 +125,7 @@ const userSchema = new mongoose.Schema ({
 
 
   app.get("/auth/google",
-  passport.authenticate('google', { scope: ["profile"] })
+  passport.authenticate('google', { scope: ["profile","email"] })
 );
 
 app.get("/auth/google/blockverse",
@@ -105,6 +134,48 @@ app.get("/auth/google/blockverse",
     // Successful authentication, redirect to secrets.
     res.redirect("/blockverse");
   });
+
+
+
+
+// app.get("/auth/google/blockverse",
+//   passport.authenticate('google', { failureRedirect: "/login" }),
+//   function(req, res) {
+//     // Successful authentication, redirect to secrets.
+
+//     // Extract user information from the profile object
+//     const profile = req.user._json; // Assuming you've stored the user's Google profile in req.user
+
+//     // Create a new user instance
+//     const newUser = new User({
+//       username: profile.email, // You can use the email as the username
+//       googleId: profile.sub, // The Google ID
+//       // Add other fields from the user's Google profile
+//       leader_name: profile.displayName,
+//       leader_email: profile.email,
+//       profile_photo_url: profile.picture,
+//       // Add other fields you want to save
+//       team_member_name: req.query.team_member_name, // Assuming you pass it as a query parameter
+//       team_member_email: req.query.team_member_email, // Assuming you pass it as a query parameter
+//       payment_amount: req.query.payment_amount, // Assuming you pass it as a query parameter
+//     });
+
+//     // Save the new user to the database
+//     newUser.save(function(err) {
+//       if (err) {
+//         console.error(err);
+//       }
+//     });
+
+//     res.redirect("/blockverse");
+//   }
+// );
+
+
+
+
+
+
 
   app.get("/login", function(req, res){
     res.render("login");
@@ -117,6 +188,7 @@ app.get("/auth/google/blockverse",
   app.get("/blockverse", function(req, res){
     if (req.isAuthenticated()){
       res.render("blockverse");
+     
     } else {
       res.redirect("/login");
     }
