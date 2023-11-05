@@ -40,14 +40,27 @@ app.use(passport.session());
 
 mongoose.connect(process.env.MONGODB_URL);
 
-const userSchema = new mongoose.Schema ({
-    username: String,
-    password: String,
+// const userSchema = new mongoose.Schema ({
+//     username: String,
+//     password: String,
 
   
-    googleId: String,
-    email: String 
+//     googleId: String,
+//     email: String 
+//   });
+
+
+  const userSchema = new mongoose.Schema({
+    leader_name: String,
+    leader_email: String,
+    profile_photo_url: String,
+    team_member_name: String,
+    team_member_email: String,
+    payment_amount: Number,
+    googleId: String, // Keep the Google ID for OAuth
+    email: String, // Keep the email for OAuth
   });
+  
 
   userSchema.plugin(passportLocalMongoose);
   userSchema.plugin(findOrCreate);
@@ -71,21 +84,21 @@ const userSchema = new mongoose.Schema ({
     }
   });
   
-  passport.use(new GoogleStrategy({
-      clientID: process.env.CLIENT_ID,
-      clientSecret: process.env.CLIENT_SECRET,
-      callbackURL: "http://localhost:4000/auth/google/blockverse",
-      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
-    },
-    function(accessToken, refreshToken, profile, cb) {
-      console.log(profile);
-      
+//   passport.use(new GoogleStrategy({
+//       clientID: process.env.CLIENT_ID,
+//       clientSecret: process.env.CLIENT_SECRET,
+//       callbackURL: "http://localhost:4000/auth/google/blockverse",
+//       userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+//     },
+//     function(accessToken, refreshToken, profile, cb) {
+//       console.log(profile);
+//       const email = profile.emails[0].value;
   
-      User.findOrCreate({ googleId: profile.id }, function (err, user) {
-        return cb(err, user);
-      });
-    }
-  ));
+//       User.findOrCreate({ googleId: profile.id, username: email, email: email }, function (err, user) {
+//         return cb(err, user);
+//       });
+//     }
+//   ));
 
 
 // passport.use(new GoogleStrategy({
@@ -94,20 +107,166 @@ const userSchema = new mongoose.Schema ({
 //     callbackURL: "http://localhost:4000/auth/google/blockverse",
 //     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
 //   },
-//   function(accessToken, refreshToken, profile, cb) {
-//     // Create a new user object and set the fields you want to save
-//     const newUser = new User({
-//       username: profile.emails[0].value, // Use the email as the username
-//       googleId: profile.id,
-//       email: profile.emails[0].value // Save the email
+//   function (accessToken, refreshToken, profile, cb) {
+//     const email = profile.emails[0].value;
+  
+//     User.findOrCreate({ googleId: profile.id, email: email }, function (err, user) {
+//       if (err) {
+//         return cb(err);
+//       }
+  
+//       user.leader_name = profile.displayName;
+//       user.leader_email = email;
+//       user.profile_photo_url = profile.photos[0].value;
+  
+//       user.save(function (err) {
+//         return cb(err, user);
+//       });
 //     });
+//   }));
 
-//     // Save the user to the database
-//     newUser.save(function(err) {
-//       return cb(err, newUser);
-//     });
-//   }
-// ));
+
+
+
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.CLIENT_ID,
+//     clientSecret: process.env.CLIENT_SECRET,
+//     callbackURL: "http://localhost:4000/auth/google/blockverse",
+//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+//   },
+//   async function (accessToken, refreshToken, profile, cb) {
+//     const email = profile.emails[0].value;
+  
+//     try {
+//       let user = await User.findOrCreate({ googleId: profile.id, email: email });
+  
+//       user.leader_name = profile.displayName;
+//       user.leader_email = email;
+//       user.profile_photo_url = profile.photos[0].value;
+  
+//       await user.save();
+  
+//       return cb(null, user);
+//     } catch (err) {
+//       return cb(err);
+//     }
+//   }));
+
+
+
+
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.CLIENT_ID,
+//     clientSecret: process.env.CLIENT_SECRET,
+//     callbackURL: "http://localhost:4000/auth/google/blockverse",
+//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+//   },
+//   async function(accessToken, refreshToken, profile, cb) {
+//     const email = profile.emails[0].value;
+  
+//     try {
+//       const user = await User.findOne({ googleId: profile.id, email: email });
+  
+//       if (!user) {
+//         // User doesn't exist, create a new user with the desired structure
+//         const newUser = new User({
+//           googleId: profile.id,
+//           email: email,
+//           leader_name: profile.displayName,
+//           leader_email: email,
+//           profile_photo_url: profile.photos[0].value,
+//         });
+  
+//         await newUser.save();
+//         return cb(null, newUser);
+//       } else {
+//         return cb(null, user);
+//       }
+//     } catch (err) {
+//       return cb(err);
+//     }
+//   }));
+
+
+
+
+passport.use(new GoogleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:4000/auth/google/blockverse",
+    userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+  },
+  async function(accessToken, refreshToken, profile, cb) {
+    const email = profile.emails[0].value;
+    
+    try {
+      const user = await User.findOne({ googleId: profile.id, email: email });
+  
+      if (!user) {
+        // User doesn't exist, create a new user with the desired structure
+        const newUser = new User({
+          googleId: profile.id,
+          email: email,
+          leader_name: profile.displayName,
+          leader_email: email,
+          profile_photo_url: profile.photos[0].value,
+        });
+  
+        await newUser.save();
+        return cb(null, newUser);
+      } else {
+        // Update additional fields for the existing user
+        user.leader_name = profile.displayName;
+        user.leader_email = email;
+        user.profile_photo_url = profile.photos[0].value;
+  
+        await user.save();
+        return cb(null, user);
+      }
+    } catch (err) {
+      return cb(err);
+    }
+  }));
+  
+  
+  
+
+
+// passport.use(new GoogleStrategy({
+//     clientID: process.env.CLIENT_ID,
+//     clientSecret: process.env.CLIENT_SECRET,
+//     callbackURL: "http://localhost:4000/auth/google/blockverse",
+//     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
+//   }, async function (accessToken, refreshToken, profile, cb) {
+//     const email = profile.emails[0].value;
+  
+//     try {
+//       const user = await User.findOne({ googleId: profile.id, email: email });
+  
+//       if (!user) {
+//         // User doesn't exist, create a new user with the desired structure
+//         const newUser = new User({
+//           googleId: profile.id,
+//           email: email,
+//           username: profile.displayName, // Set the username as the leader name
+//           profile_photo_url: profile.photos[0].value,
+//         });
+  
+//         await newUser.save();
+//         return cb(null, newUser);
+//       } else {
+//         // Update additional fields for the existing user
+//         user.username = profile.displayName; // Update the username with leader name
+//         user.profile_photo_url = profile.photos[0].value;
+  
+//         await user.save();
+//         return cb(null, user);
+//       }
+//     } catch (err) {
+//       return cb(err);
+//     }
+//   }));
+  
 
   
   
@@ -187,6 +346,7 @@ app.get("/auth/google/blockverse",
 
   app.get("/blockverse", function(req, res){
     if (req.isAuthenticated()){
+        console.log(req.user);
       res.render("blockverse");
      
     } else {
