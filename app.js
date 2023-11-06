@@ -17,6 +17,8 @@ const nodemailer = require("nodemailer");
 const connectDB = require("./config/db");
 const sendEmail = require("./utils/email.js");
 const homeRoutes = require("./routes/homeRoutes.js");
+const authRoutes = require("./routes/authRoutes.js");
+const User = require("./models/User.js");
 
 
 
@@ -36,7 +38,7 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 app.use(session({
-  secret: "Our little secret.",
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false
 }));
@@ -47,23 +49,7 @@ mongoose.connect(process.env.MONGODB_URL);
 
 
 
-  const userSchema = new mongoose.Schema({
-    username:String,
-    leader_name: String,
-    leader_email: String,
-    profile_photo_url: String,
-    member_name: String,
-    member_email: String,
-    payment_amount: Number,
-    googleId: String,
-    email: String, 
-  });
-  
-
-  userSchema.plugin(passportLocalMongoose);
-  userSchema.plugin(findOrCreate);
-
-  const User = new mongoose.model("User", userSchema);
+ 
 
   passport.use(User.createStrategy());
 
@@ -83,16 +69,6 @@ mongoose.connect(process.env.MONGODB_URL);
   });
   
 
-
-
-
-
-
-
-
-
-
-
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
@@ -106,7 +82,7 @@ passport.use(new GoogleStrategy({
       const user = await User.findOne({ googleId: profile.id, email: email });
   
       if (!user) {
-        // User doesn't exist, create a new user with the desired structure
+      
         const newUser = new User({
           username:profile.displayName,
           googleId: profile.id,
@@ -119,7 +95,7 @@ passport.use(new GoogleStrategy({
         await newUser.save();
         return cb(null, newUser);
       } else {
-        // Update additional fields for the existing user
+        
         user.leader_name = profile.displayName;
         user.leader_email = email;
         user.profile_photo_url = profile.photos[0].value;
@@ -132,26 +108,6 @@ passport.use(new GoogleStrategy({
     }
   }));
   
-  
-  
-
-
-
-
-  
-  
-  app.use("/",homeRoutes);
-
-
-  // app.get("/", function(req, res){
-  //   res.render("home");
-  // });
-
-
-
-
-
-
 
   app.get("/auth/google",
   passport.authenticate('google', { scope: ["profile","email"] })
@@ -160,191 +116,12 @@ passport.use(new GoogleStrategy({
 app.get("/auth/google/blockverse",
   passport.authenticate('google', { failureRedirect: "/login" }),
   function(req, res) {
-    // Successful authentication, redirect to secrets.
     res.redirect("/blockverse");
   });
 
 
 
-
-
-
-
-
-
-
-
-  // app.get("/login", function(req, res){
-  //   res.render("login");
-  // });
-
-  // app.get("/register", function(req, res){
-  //   res.render("register");
-  // });
-
-  app.get("/blockverse", function(req, res){
-    if (req.isAuthenticated()){
-        console.log(req.user);
-      res.render("blockverse", {
-        RAZORPAY_ID_KEY: process.env.RAZORPAY_ID_KEY
-      });
-     
-    } else {
-      res.redirect("/login");
-    }
-  });
-
-
-
-  app.get("/logout", function(req, res){
-    req.logout(function(err) {
-      if (err) {
-        console.log(err);
-      }
-      res.redirect("/");
-    });
-  });
-  
-  
-  app.get("/payment_page", function(req, res){
-    res.render("payment_page");
-  });
-
-
-
-
-// app.post("/register", function (req, res) {
-//     console.log(req.body);
-//     const { username, leader_email, profile_photo_url, member_name, member_email, password } = req.body;
-  
-//     const user = new User({
-//         username,
-//       leader_email,
-//       profile_photo_url,
-//       member_name,
-//      member_email,
-      
-//     });
-  
-//     User.register(user, password, function (err, user) {
-//       if (err) {
-//         console.error(err);
-//         return res.status(500).json({ error: "Registration failed" });
-//       }
-//       passport.authenticate("local")(req, res, function () {
-//         res.redirect("/blockverse");
-//       });
-//     });
-//   });
-  
-  
-app.post("/register", async function (req, res) {
-  const { username, leader_email, profile_photo_url, member_name, member_email, password } = req.body;
-
-  if (!username) {
-      return res.status(400).json({ error: "Username is required" });
-  }
-
-  // Check if the username is already in use
-  const existingUser = await User.findOne({ username });
-  if (existingUser) {
-      return res.status(400).json({ error: "Username is already taken" });
-  }
-
-  const user = new User({
-      username, // Set the provided username
-      leader_email,
-      profile_photo_url,
-      member_name,
-      member_email,
-  });
-
-  User.register(user, password, function (err, user) {
-      if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Registration failed" });
-      }
-      passport.authenticate("local")(req, res, function () {
-          res.redirect("/blockverse");
-      });
-  });
-});
-
-
-
-
-// app.post("/register", function (req, res) {
-//   const { username, leader_email, profile_photo_url, member_name, member_email, password } = req.body;
-
-//   if (!username || username.trim() === "") {
-//     return res.status(400).json({ error: "Username is required." });
-//   }
-
-//   // Check if the username is already in use
-//   User.findOne({ username: username }, (err, existingUser) => {
-//     if (err) {
-//       return res.status(500).json({ error: "Registration failed" });
-//     }
-
-//     if (existingUser) {
-//       return res.status(400).json({ error: "Username is already in use." });
-//     }
-
-//     const user = new User({
-//       username,
-//       leader_email,
-//       profile_photo_url,
-//       member_name,
-//       member_email,
-//     });
-
-//     User.register(user, password, function (err, registeredUser) {
-//       if (err) {
-//         console.error(err);
-//         return res.status(500).json({ error: "Registration failed" });
-//       }
-//       passport.authenticate("local")(req, res, function () {
-//         res.redirect("/blockverse");
-//       });
-//     });
-//   });
-// });
-
-
-
-
-
-  app.post("/login", function(req, res){
-    const user = new User({
-      username: req.body.username,
-      password: req.body.password
-    });
-    req.login(user, function(err){
-      if (err) {
-        console.log(err);
-      } else {
-        passport.authenticate("local")(req, res, function(){
-          res.redirect("/blockverse");
-        });
-      }
-    });
-  });
-  
-
-
 const PORT = process.env.PORT || 4000;
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -354,7 +131,7 @@ const razorpay = new Razorpay({
 })
 
 
-app.post("/order", (req,res)=>{
+app.post("/payment", (req,res)=>{
     let options = {
         amount : 2000,
         currency: "INR",
@@ -367,20 +144,6 @@ app.post("/order", (req,res)=>{
 })
 
 
-// app.post("/payment/callback", (req, res) => {
-//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-
-//   const paymentStatus = "transaction successful";
-
-  
-//       res.json({
-//           status: paymentStatus,
-//           razorpay_order_id,
-//           razorpay_payment_id,
-//           razorpay_signature,
-//       });
- 
-// });
 
 
 app.post("/payment/callback", (req, res) => {
@@ -398,22 +161,30 @@ app.post("/payment/callback", (req, res) => {
 
 
 
-app.post("/sendRegistrationConfirmationEmail", (req,res)=>{
+
+
+app.post("/sendRegistrationConfirmationEmail", (req, res) => {
+  const userEmail = req.user.email || req.user.leader_email;
+  
   sendEmail({
-    email:req.user.email,
+    email: userEmail,
     subject: "blockverse registration",
     message: "your registration for blockverse is successful",
- });
- res.status(200).json({
-  status: "success",
-  message: "verification mail send to user email",
- });
-})
+  });
+
+  res.status(200).json({
+    status: "success",
+    message: "verification mail sent to the user's email",
+  });
+});
 
 
 
 
 
+ app.use("/",homeRoutes);
+ 
+  
 
 
 
@@ -422,45 +193,5 @@ app.post("/sendRegistrationConfirmationEmail", (req,res)=>{
 app.listen(PORT,()=>{
     console.log(`server started at ${PORT}`);
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
