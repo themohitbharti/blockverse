@@ -366,20 +366,35 @@ app.post("/order", (req,res)=>{
 })
 
 
+// app.post("/payment/callback", (req, res) => {
+//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+//   const paymentStatus = "transaction successful";
+
+  
+//       res.json({
+//           status: paymentStatus,
+//           razorpay_order_id,
+//           razorpay_payment_id,
+//           razorpay_signature,
+//       });
+ 
+// });
+
+
 app.post("/payment/callback", (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
   const paymentStatus = "transaction successful";
 
-  
-      res.json({
-          status: paymentStatus,
-          razorpay_order_id,
-          razorpay_payment_id,
-          razorpay_signature,
-      });
- 
+  res.render("verification", {
+    paymentStatus,
+    razorpay_order_id,
+    razorpay_payment_id,
+    razorpay_signature,
+  });
 });
+
 
 
 app.post("/sendRegistrationConfirmationEmail", (req,res)=>{
@@ -390,7 +405,7 @@ app.post("/sendRegistrationConfirmationEmail", (req,res)=>{
  });
  res.status(200).json({
   status: "success",
-  message: "password reset link send to user email",
+  message: "verification mail send to user email",
  });
 })
 
