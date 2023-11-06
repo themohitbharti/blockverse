@@ -5,9 +5,57 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>blockverse</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
 </head>
 <body>
     <h1>This is the main page of Blockverse</h1>
     <a href="/logout">Logout</a>
+    <br><br><br>
+    
+
+    <button id="rzp-button1">pay 20rs</button>
+    <br><br>
+
+    <form action="/sendRegistrationConfirmationEmail" method="post">
+        <button  type="submit">
+            verification email
+           </button>
+    </form>
+
+    <script>
+        axios.post('/order').then((info)=>{
+            console.log(info);
+
+            var options = {
+    "key":  "<%= RAZORPAY_ID_KEY %>",
+    "amount": "2000", 
+    "currency": "INR",
+    "name": "BRL",
+    "description": "Test Transaction",
+    "image": "https://www.akgec.ac.in/wp-content/uploads/2019/08/kapoor.jpg",
+    "order_id": info.data.id, 
+    "callback_url": "/payment/callback",
+    "prefill": { 
+        "name": "mohit bharti",
+        "email": "mohit.bharti@example.com",
+        "contact": "9520608608"
+    },
+    "notes": {
+        "address": "Razorpay Corporate Office"
+    },
+    "theme": {
+        "color": "#3399cc"
+    }
+};
+
+var rzp1 = new Razorpay(options);
+document.getElementById('rzp-button1').onclick = function(e){
+    rzp1.open();
+    e.preventDefault();
+}
+        })
+    </script>
 </body>
 </html>
