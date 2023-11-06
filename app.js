@@ -16,6 +16,7 @@ const nodemailer = require("nodemailer");
 
 const connectDB = require("./config/db");
 const sendEmail = require("./utils/email.js");
+const homeRoutes = require("./routes/homeRoutes.js");
 
 
 
@@ -54,8 +55,8 @@ mongoose.connect(process.env.MONGODB_URL);
     member_name: String,
     member_email: String,
     payment_amount: Number,
-    googleId: String, // Keep the Google ID for OAuth
-    email: String, // Keep the email for OAuth
+    googleId: String,
+    email: String, 
   });
   
 
@@ -139,12 +140,12 @@ passport.use(new GoogleStrategy({
 
   
   
-  
+  app.use("/",homeRoutes);
 
 
-  app.get("/", function(req, res){
-    res.render("home");
-  });
+  // app.get("/", function(req, res){
+  //   res.render("home");
+  // });
 
 
 
@@ -173,13 +174,13 @@ app.get("/auth/google/blockverse",
 
 
 
-  app.get("/login", function(req, res){
-    res.render("login");
-  });
+  // app.get("/login", function(req, res){
+  //   res.render("login");
+  // });
 
-  app.get("/register", function(req, res){
-    res.render("register");
-  });
+  // app.get("/register", function(req, res){
+  //   res.render("register");
+  // });
 
   app.get("/blockverse", function(req, res){
     if (req.isAuthenticated()){
