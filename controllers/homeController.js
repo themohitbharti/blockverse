@@ -8,6 +8,11 @@ const homeController = (req, res) => {
     res.render("home");
 };
 
+const memberController = (req, res) => {
+    res.render("member_details");
+};
+
+
 const registerController = (req, res) => {
     res.render("register");
 };
@@ -97,6 +102,43 @@ const registerPostController = async (req, res) => {
       }
     });
   };
+
+
+
+
+
+ 
+
+
+
+  const updateMemberDetailsController = async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const { member_name, member_email } = req.body;
+  
+      if (!member_name || !member_email) {
+        return res.status(400).json({ error: "Member name and email are required" });
+      }
+  
+      const user = await User.findById(userId);
+  
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+  
+      user.member_name = member_name;
+      user.member_email = member_email;
+  
+      await user.save();
+
+      res.redirect("/auth/google");
+  
+      
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to update member details" });
+    }
+  };
   
   
   
@@ -110,4 +152,6 @@ module.exports = {
     logoutController,
     registerPostController,
     loginPostController,
+    memberController,
+    updateMemberDetailsController,
 };

@@ -1,0 +1,21 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Member Details</title>
+</head>
+<body>
+  <h1>Member Details</h1>
+  <p>Please enter your member details:</p>
+
+  <form action="/update-member-details" method="POST">
+    <label for="member_name">Member Name:</label>
+    <input type="text" id="member_name" name="member_name" required>
+
+    <label for="member_email">Member Email:</label>
+    <input type="email" id="member_email" name="member_email" required>
+
+    <input type="submit" value="Submit">
+  </form>
+</body>
+</html>

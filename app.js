@@ -113,11 +113,25 @@ passport.use(new GoogleStrategy({
   passport.authenticate('google', { scope: ["profile","email"] })
 );
 
-app.get("/auth/google/blockverse",
-  passport.authenticate('google', { failureRedirect: "/login" }),
-  function(req, res) {
-    res.redirect("/blockverse");
-  });
+
+app.get(
+  "/auth/google/blockverse",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  function (req, res) {
+    if (req.isAuthenticated()) {
+      if (req.user.member_name && req.user.member_email) {
+        res.redirect("/blockverse");
+      } else {
+        res.redirect("/member-details"); 
+      }
+    } else {
+      res.redirect("/login"); 
+    }
+  }
+);
+
+
+
 
 
 
