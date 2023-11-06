@@ -131,7 +131,7 @@ const registerPostController = async (req, res) => {
   
       await user.save();
 
-      res.redirect("/auth/google");
+      res.redirect("/blockverse");
   
       
     } catch (error) {

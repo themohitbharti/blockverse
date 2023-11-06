@@ -18,8 +18,13 @@ const userSchema = new mongoose.Schema({
     payment_amount: Number,
     googleId: String,
     email: String, 
+    paymentStatus: String, // Field to store payment status
+  razorpay_order_id: String, // Field to store Razorpay order ID
+  razorpay_payment_id: String, // Field to store Razorpay payment ID
+  razorpay_signature: String, 
   });
   
+
 
   userSchema.plugin(passportLocalMongoose);
   userSchema.plugin(findOrCreate);
