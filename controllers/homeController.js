@@ -38,42 +38,48 @@ const blockverseController = (req, res) => {
     });
   };
 
-  const registerPostController = async (req, res) => {
+
+
+
+const registerPostController = async (req, res) => {
     const { username, leader_email, profile_photo_url, member_name, member_email, password } = req.body;
-  
+
     if (!username) {
-      return res.status(400).json({ error: "Username is required" });
+        return res.status(400).json({ error: "Username is required" });
     }
-  
     try {
-      const existingUser = await User.findOne({ username });
-      if (existingUser) {
-        return res.status(400).json({ error: "Username is already taken" });
-      }
-  
-      const user = new User({
-        username,
-        leader_email,
-        profile_photo_url,
-        member_name,
-        member_email,
-      });
-  
-      User.register(user, password, (err, user) => {
-        if (err) {
-          console.error(err);
-          return res.status(500).json({ error: "Registration failed" });
-        }
-  
-        passport.authenticate("local")(req, res, () => {
-          res.redirect("/blockverse");
+        const existingUser = await User.findOne({
+    $or: [{ username }, { leader_email }]
         });
-      });
+
+    if (existingUser) {
+  return res.status(400).json({ error: "Username or leader_email is already taken" });
+        }
+
+        const user = new User({
+            username,
+            leader_email,
+              profile_photo_url,
+            member_name,
+            member_email,
+        });
+
+        User.register(user, password, (err, user) => {
+            if (err) {
+                console.error(err);
+                       return res.status(500).json({ error: "Registration failed" });
+            }
+
+     passport.authenticate("local")(req, res, () => {
+                res.redirect("/blockverse");
+            });
+        });
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ error: "Registration failed" });
+        console.error(error);
+        return res.status(500).json({ error: "Registration failed" });
     }
-  };
+};
+
 
   const loginPostController = (req, res) => {
     const user = new User({
