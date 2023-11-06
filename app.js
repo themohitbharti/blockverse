@@ -159,19 +159,48 @@ app.post("/payment", (req,res)=>{
 
 
 
+const razorPay = new Razorpay({
+  key_id: process.env.RAZORPAY_ID_KEY,
+  key_secret: process.env.RAZORPAY_SECRET_KEY,
+});
 
 app.post("/payment/callback", (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-  const paymentStatus = "transaction successful";
-
-  res.render("verification", {
-    paymentStatus,
-    razorpay_order_id,
-    razorpay_payment_id,
-    razorpay_signature,
-  });
+  razorPay.payments.fetch(razorpay_payment_id)
+    .then((payment) => {
+      if (payment.status === 'captured') {
+      
+        const paymentStatus = "transaction successful";
+        res.render("verification", {
+          paymentStatus,
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        });
+      } else {
+   
+        const paymentStatus = "transaction failed";
+        res.render("verification", {
+          paymentStatus,
+          razorpay_order_id,
+          razorpay_payment_id,
+          razorpay_signature,
+        });
+      }
+    })
+    .catch((error) => {
+      console.error("Razorpay API error:", error);
+      const paymentStatus = "transaction failed";
+      res.render("verification", {
+        paymentStatus,
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+      });
+    });
 });
+
 
 
 
