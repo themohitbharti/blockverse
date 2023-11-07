@@ -25,8 +25,10 @@ const loginController = (req, res) => {
 const blockverseController = (req, res) => {
     if (req.isAuthenticated()) {
       console.log(req.user);
+      const user = req.user;
       res.render("blockverse", {
-        RAZORPAY_ID_KEY: process.env.RAZORPAY_ID_KEY
+        RAZORPAY_ID_KEY: process.env.RAZORPAY_ID_KEY,
+        paid: user.paid,
       });
     } else {
       res.redirect("/login");

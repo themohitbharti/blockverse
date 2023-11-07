@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
   razorpay_order_id: String, // Field to store Razorpay order ID
   razorpay_payment_id: String, // Field to store Razorpay payment ID
   razorpay_signature: String, 
+  paid: { type: Boolean, default: false },
   });
   
 

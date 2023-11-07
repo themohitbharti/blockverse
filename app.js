@@ -152,7 +152,7 @@ app.post("/payment", (req,res)=>{
     };
 
     razorpay.orders.create(options , function(err,order){
-        // console.log(order);
+       
         res.json(order);
     })
 })
@@ -164,42 +164,7 @@ const razorPay = new Razorpay({
   key_secret: process.env.RAZORPAY_SECRET_KEY,
 });
 
-// app.post("/payment/callback", (req, res) => {
-//   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
-//   razorPay.payments.fetch(razorpay_payment_id)
-//     .then((payment) => {
-//       if (payment.status === 'captured') {
-      
-//         const paymentStatus = "transaction successful";
-//         res.render("verification", {
-//           paymentStatus,
-//           razorpay_order_id,
-//           razorpay_payment_id,
-//           razorpay_signature,
-//         });
-//       } else {
-   
-//         const paymentStatus = "transaction failed";
-//         res.render("verification", {
-//           paymentStatus,
-//           razorpay_order_id,
-//           razorpay_payment_id,
-//           razorpay_signature,
-//         });
-//       }
-//     })
-//     .catch((error) => {
-//       console.error("Razorpay API error:", error);
-//       const paymentStatus = "transaction failed";
-//       res.render("verification", {
-//         paymentStatus,
-//         razorpay_order_id,
-//         razorpay_payment_id,
-//         razorpay_signature,
-//       });
-//     });
-// });
 
 
 
@@ -210,7 +175,7 @@ app.post("/payment/callback", async (req, res) => {
     const payment = await razorPay.payments.fetch(razorpay_payment_id);
 
     if (payment.status === 'captured') {
-      // Update the user's payment-related fields in the User model
+     
       const userId = req.user.id;
       const user = await User.findById(userId);
 
@@ -222,8 +187,15 @@ app.post("/payment/callback", async (req, res) => {
       user.razorpay_order_id = razorpay_order_id;
       user.razorpay_payment_id = razorpay_payment_id;
       user.razorpay_signature = razorpay_signature;
+      user.paid = true;
 
       await user.save();
+
+      sendEmail({
+        email: user.email,
+        subject: "Blockverse payment verification",
+        message: "Your transaction was successful.",
+      });
 
       res.render("verification", {
         paymentStatus: "transaction successful",
@@ -232,20 +204,29 @@ app.post("/payment/callback", async (req, res) => {
         razorpay_signature: razorpay_signature,
       });
     } else {
-      // Handle transaction failure here
+   
+      const userId = req.user.id;
+      const user = await User.findById(userId);
       res.render("verification", {
         paymentStatus: "transaction failed",
         razorpay_order_id: req.user.razorpay_order_id,
         razorpay_payment_id: req.user.razorpay_payment_id,
         razorpay_signature: req.user.razorpay_signature,
       });
+
+
+      sendEmail({
+        email: user.email, 
+        subject: "Blockverse payment verification",
+        message: "Your transaction was failed.",
+      });
     }
   } catch (error) {
     console.error("Razorpay API error:", error);
-    // Handle API error here
+    
   }
 
-  // Render the verification page as needed
+  
   
 });
 
