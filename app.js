@@ -77,34 +77,39 @@ passport.use(new GoogleStrategy({
   },
   async function(accessToken, refreshToken, profile, cb) {
     const email = profile.emails[0].value;
+
+
+    if (email.endsWith('@akgec.ac.in')) {
+      try {
+        const user = await User.findOne({ googleId: profile.id, email: email });
     
-    try {
-      const user = await User.findOne({ googleId: profile.id, email: email });
-  
-      if (!user) {
-      
-        const newUser = new User({
-          username:profile.displayName,
-          googleId: profile.id,
-          email: email,
-          leader_name: profile.displayName,
-          leader_email: email,
-          profile_photo_url: profile.photos[0].value,
-        });
-  
-        await newUser.save();
-        return cb(null, newUser);
-      } else {
+        if (!user) {
         
-        user.leader_name = profile.displayName;
-        user.leader_email = email;
-        user.profile_photo_url = profile.photos[0].value;
-  
-        await user.save();
-        return cb(null, user);
+          const newUser = new User({
+            username:profile.displayName,
+            googleId: profile.id,
+            email: email,
+            leader_name: profile.displayName,
+            leader_email: email,
+            profile_photo_url: profile.photos[0].value,
+          });
+    
+          await newUser.save();
+          return cb(null, newUser);
+        } else {
+          
+          user.leader_name = profile.displayName;
+          user.leader_email = email;
+          user.profile_photo_url = profile.photos[0].value;
+    
+          await user.save();
+          return cb(null, user);
+        }
+      } catch (err) {
+        return cb(err);
       }
-    } catch (err) {
-      return cb(err);
+    } else {
+      return cb(new Error('Access restricted to @akgec.ac.in email addresses only'), false);
     }
   }));
   
@@ -129,14 +134,6 @@ app.get(
     }
   }
 );
-
-
-
-
-
-
-
-
 
 
 
@@ -230,9 +227,7 @@ app.post("/payment/callback", async (req, res) => {
     console.error("Razorpay API error:", error);
     
   }
-
-  
-  
+ 
 });
 
 
@@ -252,17 +247,7 @@ app.post("/sendRegistrationConfirmationEmail", (req, res) => {
   });
 });
 
-
-
-
-
  app.use("/",homeRoutes);
- 
-  
-
-
-
-
 
 app.listen(PORT,()=>{
     console.log(`server started at ${PORT}`);
