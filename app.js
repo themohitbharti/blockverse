@@ -199,7 +199,10 @@ app.post("/payment/callback", async (req, res) => {
         message: "Your transaction was successful.",
       });
 
+    
+
       res.render("verification", {
+        paid: user.paid,
         paymentStatus: "transaction successful",
         razorpay_order_id: razorpay_order_id,
         razorpay_payment_id: razorpay_payment_id,
