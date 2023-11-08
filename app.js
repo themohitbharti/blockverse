@@ -194,7 +194,7 @@ app.post("/payment/callback", async (req, res) => {
       await user.save();
 
       sendEmail({
-        email: user.email,
+        email: [user.email, user.member_email],
         subject: "Blockverse payment verification",
         message: "Your transaction was successful.",
       });
@@ -221,7 +221,7 @@ app.post("/payment/callback", async (req, res) => {
 
 
       sendEmail({
-        email: user.email, 
+        email: [user.email, user.member_email], 
         subject: "Blockverse payment verification",
         message: "Your transaction was failed.",
       });
