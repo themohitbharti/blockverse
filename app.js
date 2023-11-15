@@ -72,7 +72,7 @@ mongoose.connect(process.env.MONGODB_URL);
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "http://localhost:4000/auth/google/blockverse",
+    callbackURL: "https://blockverse-ei34.onrender.com/auth/google/blockverse",
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   async function(accessToken, refreshToken, profile, cb) {
