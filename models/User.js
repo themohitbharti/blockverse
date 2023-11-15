@@ -15,7 +15,6 @@ const userSchema = new mongoose.Schema({
     profile_photo_url: String,
     member_name: String,
     member_email: String,
-    payment_amount: Number,
     googleId: String,
     email: String, 
     paymentStatus: String, // Field to store payment status
